@@ -104,14 +104,7 @@ classDiagram
 - Pruebas de integración para la construcción del árbol y análisis de enlaces.
 - Validación de la exportación del árbol y detección de enlaces rotos.
 
-## 8. Cronograma y entregables
-
-- Fase 1: Análisis y diseño (1 semana).
-- Fase 2: Implementación de la estructura base y pruebas (2 semanas).
-- Fase 3: Desarrollo de la interfaz de usuario y exportación (1 semana).
-- Entrega final: Informe completo, código fuente, pruebas y documentación.
-
-## 9. Plan de implementación en código
+## 8. Plan de implementación en código
 
 **Nota**: Archivos `.h` en `include/`, archivos `.cpp` en `src/` divididos por dominio (`business/`, `data/`, `ui/`). Se recomienda seguir TDD (pruebas antes de la implementación).
 
@@ -137,9 +130,3 @@ classDiagram
 
    - Tests unitarios e integración en la carpeta `tests/`.
    - Validación de cada funcionalidad del sistema.
-
-### Actualizaciones Clave
-
-- **Estructuras de Datos**: Se añadieron `LinkedList` y `Stack` a la sección de estructuras de datos, reflejando su implementación y uso en el proyecto.
-- **TreeNode y NavigationTree**: Se destacó el uso de `LinkedList` para gestionar los nodos hijos en la estructura del árbol.
-- **WebCrawler**: Se actualizó para usar `LinkedList` en la gestión de URLs visitadas, lo cual se alinea con el requisito del proyecto de evitar ciclos.

@@ -12,13 +12,13 @@ LinkedList::~LinkedList() {
     }
 }
 
-void LinkedList::add(int value) {
+void LinkedList::add(void* value) {
     Node* newNode = new Node{value, head};
     head = newNode;
     ++length;
 }
 
-bool LinkedList::remove(int value) {
+bool LinkedList::remove(void* value) {
     Node** current = &head;
     while (*current != nullptr) {
         if ((*current)->data == value) {
@@ -33,7 +33,7 @@ bool LinkedList::remove(int value) {
     return false;
 }
 
-int LinkedList::get(int index) const {
+void* LinkedList::get(int index) const {
     assert(index >= 0 && index < length);
     Node* current = head;
     for (int i = 0; i < index; ++i) {

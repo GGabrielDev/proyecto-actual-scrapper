@@ -6,14 +6,14 @@ public:
     LinkedList();
     ~LinkedList();
 
-    void add(int value);
-    bool remove(int value);
-    int get(int index) const;
+    void add(void* value);
+    bool remove(void* value);
+    void* get(int index) const;
     int size() const;
 
 private:
     struct Node {
-        int data;
+        void* data;
         Node* next;
     };
 
