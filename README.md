@@ -1,5 +1,3 @@
-Basado en el contenido del archivo PDF y el README de referencia que proporcionaste, aquí tienes un ejemplo de un `README.md` para tu proyecto de desarrollo de software en C++:
-
 # Proyecto Explorador de Enlaces Web
 
 ## 1. Introducción
@@ -53,7 +51,7 @@ classDiagram
 
     %% Capa de Negocio
     class WebCrawler {
-        -visitedUrls: set<string>
+        -visitedUrls: LinkedList
         +crawl(const string& url, int depth)
         +countLinks()
         +findKeyword(const string& keyword)
@@ -69,7 +67,7 @@ classDiagram
     %% Entidades de Dominio
     class TreeNode {
         -url: string
-        -children: list<TreeNode*>
+        -children: LinkedList
         +addChild(TreeNode*)
     }
 
@@ -77,16 +75,32 @@ classDiagram
     class FileExporter {
         +exportTree(const NavigationTree&, const string& filename)
     }
+
+    %% Estructuras de Datos
+    class LinkedList {
+        +add(int)
+        +remove(int): bool
+        +get(int): int
+        +size(): int
+    }
+
+    class Stack {
+        +push(int)
+        +pop(): int
+        +peek(): int
+        +isEmpty(): bool
+    }
 ```
 
 ## 6. Estructuras de datos y diagrama de clases
 
-- **Árbol de navegación**: Representado por `NavigationTree` y `TreeNode`.
-- **Conjunto de URLs visitadas**: Para evitar ciclos, usando `std::set`.
+- **Árbol de navegación**: Representado por `NavigationTree` y `TreeNode`, utilizando `LinkedList` para gestionar los nodos hijos.
+- **Conjunto de URLs visitadas**: Implementado con `LinkedList` para evitar ciclos.
+- **Pila de exploración**: Implementada con `Stack` para gestionar la exploración de enlaces en profundidad.
 
 ## 7. Plan de pruebas
 
-- Pruebas unitarias para cada clase (`WebCrawler`, `NavigationTree`, `TreeNode`).
+- Pruebas unitarias para cada clase (`WebCrawler`, `NavigationTree`, `TreeNode`, `LinkedList`, `Stack`).
 - Pruebas de integración para la construcción del árbol y análisis de enlaces.
 - Validación de la exportación del árbol y detección de enlaces rotos.
 
@@ -105,7 +119,7 @@ classDiagram
 
 1. **Estructuras básicas**
 
-   - `TreeNode`, `NavigationTree`.
+   - `LinkedList`, `Stack`, `TreeNode`, `NavigationTree`.
 
 2. **Lógica de negocio**
 
@@ -123,3 +137,9 @@ classDiagram
 
    - Tests unitarios e integración en la carpeta `tests/`.
    - Validación de cada funcionalidad del sistema.
+
+### Actualizaciones Clave
+
+- **Estructuras de Datos**: Se añadieron `LinkedList` y `Stack` a la sección de estructuras de datos, reflejando su implementación y uso en el proyecto.
+- **TreeNode y NavigationTree**: Se destacó el uso de `LinkedList` para gestionar los nodos hijos en la estructura del árbol.
+- **WebCrawler**: Se actualizó para usar `LinkedList` en la gestión de URLs visitadas, lo cual se alinea con el requisito del proyecto de evitar ciclos.
