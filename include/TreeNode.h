@@ -14,7 +14,7 @@ public:
     LinkedList* getChildren() const;
 
 private:
-    char url[256];  // Assuming a max URL length of 255 characters
+    char* url;  // Pointer to dynamically allocated memory
     LinkedList* children;
 };
 

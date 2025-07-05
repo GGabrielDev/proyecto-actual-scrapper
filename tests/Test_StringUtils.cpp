@@ -22,9 +22,16 @@ void testCompareString() {
     assert(compareString("abcd", "abc") > 0);
 }
 
+void testStringLength() {
+    assert(stringLength("Hello") == 5);
+    assert(stringLength("") == 0);
+    assert(stringLength("A longer string") == 15);
+}
+
 int main() {
     testCopyString();
     testCompareString();
+    testStringLength();
     std::cout << "All StringUtils tests passed!" << std::endl;
     return 0;
 }

@@ -17,3 +17,11 @@ int compareString(const char* a, const char* b) {
     }
     return a[i] - b[i];
 }
+
+int stringLength(const char* str) {
+    int length = 0;
+    while (str[length] != '\0') {
+        ++length;
+    }
+    return length;
+}

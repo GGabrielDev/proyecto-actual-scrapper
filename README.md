@@ -52,35 +52,35 @@ classDiagram
     %% Capa de Negocio
     class WebCrawler {
         -visitedUrls: LinkedList
-        +crawl(const string& url, int depth)
+        +crawl(const char* url, int depth)
         +countLinks()
-        +findKeyword(const string& keyword)
+        +findKeyword(const char* keyword)
         +detectBrokenLinks()
     }
 
     class NavigationTree {
         -root: TreeNode*
-        +addNode(const string& url)
-        +exportToFile(const string& filename)
+        +addNode(const char* url)
+        +exportToFile(const char* filename)
     }
 
     %% Entidades de Dominio
     class TreeNode {
-        -url: string
+        -url: char*
         -children: LinkedList
         +addChild(TreeNode*)
     }
 
     %% Capa de Datos
     class FileExporter {
-        +exportTree(const NavigationTree&, const string& filename)
+        +exportTree(const NavigationTree&, const char* filename)
     }
 
     %% Estructuras de Datos
     class LinkedList {
-        +add(int)
-        +remove(int): bool
-        +get(int): int
+        +add(void*)
+        +remove(void*): bool
+        +get(int): void*
         +size(): int
     }
 
@@ -104,7 +104,11 @@ classDiagram
 - Pruebas de integración para la construcción del árbol y análisis de enlaces.
 - Validación de la exportación del árbol y detección de enlaces rotos.
 
-## 8. Plan de implementación en código
+## 8. Consideraciones sobre el manejo de memoria
+
+El sistema utiliza memoria dinámica para manejar URLs de longitud variable. Se han implementado destructores adecuados para liberar memoria y evitar fugas. Sin embargo, no se han realizado pruebas exhaustivas de memoria debido a la naturaleza del proyecto. Se recomienda el uso de herramientas de análisis de memoria para proyectos más críticos.
+
+## 9. Plan de implementación en código
 
 **Nota**: Archivos `.h` en `include/`, archivos `.cpp` en `src/` divididos por dominio (`business/`, `data/`, `ui/`). Se recomienda seguir TDD (pruebas antes de la implementación).
 
