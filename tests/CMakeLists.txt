@@ -1,3 +1,6 @@
+# Enable testing
+enable_testing()
+
 # Detect all test source files
 file(GLOB TEST_SOURCES *.cpp)
 
@@ -10,5 +13,5 @@ foreach(test_file ${TEST_SOURCES})
     target_include_directories(${test_name} PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
     # Register the test so CTest can find it
-    add_test(NAME ${test_name} COMMAND ${test_name})
+    add_test(NAME ${test_name} COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${test_name})
 endforeach()
