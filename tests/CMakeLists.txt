@@ -9,7 +9,7 @@ foreach(test_file ${TEST_SOURCES})
     get_filename_component(test_name ${test_file} NAME_WE)
 
     add_executable(${test_name} ${test_file})
-    target_link_libraries(${test_name} WebLinkExplorerLib)
+    target_link_libraries(${test_name} WebLinkExplorerLib ${CURL_LIBRARIES})
     target_include_directories(${test_name} PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
     # Register the test so CTest can find it

@@ -14,6 +14,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Include directories
 include_directories(include)
 
+# Include cURL
+find_package(CURL REQUIRED)
+include_directories(${CURL_INCLUDE_DIR})
+
 # Add subdirectories
 add_subdirectory(src)
 add_subdirectory(tests)

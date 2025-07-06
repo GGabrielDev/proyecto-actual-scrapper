@@ -8,3 +8,6 @@ file(GLOB_RECURSE SOURCES
 
 # Create a library
 add_library(WebLinkExplorerLib ${SOURCES})
+
+# Link the library to cURL
+target_link_libraries(WebLinkExplorerLib PRIVATE ${CURL_LIBRARIES})
