@@ -18,6 +18,22 @@ void LinkedList::add(void* value) {
     ++length;
 }
 
+void LinkedList::addToEnd(void* value) {
+    Node* newNode = new Node{value, nullptr};
+
+    if (head == nullptr) {
+        head = newNode;
+    } else {
+        Node* current = head;
+        while (current->next != nullptr) {
+            current = current->next;
+        }
+        current->next = newNode;
+    }
+
+    ++length;
+}
+
 bool LinkedList::remove(void* value) {
     Node** current = &head;
     while (*current != nullptr) {

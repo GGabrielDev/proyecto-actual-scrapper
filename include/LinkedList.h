@@ -7,6 +7,7 @@ public:
     ~LinkedList();
 
     void add(void* value);
+    void addToEnd(void* value);
     bool remove(void* value);
     void* get(int index) const;
     int size() const;
