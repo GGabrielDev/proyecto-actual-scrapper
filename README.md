@@ -20,70 +20,81 @@ El sistema debe construir un árbol de navegación a partir de una URL raíz, co
 
 ### 3.2 Requerimientos no funcionales
 
-- Uso de la librería `curl` para acceder a los archivos web.
-- Implementación en C++ siguiendo el modelo de 3 capas: presentación, lógica de negocio y datos.
+- Uso de la librería `libcurl` para acceder a los archivos web.
+- Implementación en C++ sin uso de STL, utilizando estructuras de datos y manejo de cadenas personalizados.
 - Código modular, legible y con pruebas unitarias.
 
-## 4. Casos de uso
+## 4. Capas del sistema
 
-- Construcción del árbol de navegación.
-- Análisis de enlaces internos y externos.
-- Búsqueda de palabras clave en el árbol.
-- Detección de enlaces rotos.
-- Exportación del árbol a un archivo.
+El proyecto sigue una arquitectura de tres capas:
 
-## 5. Diseño de la arquitectura
+- **Capa de presentación**: Maneja la interfaz de consola.
+- **Capa de negocio**: Contiene la lógica de exploración y análisis de enlaces.
+- **Capa de datos**: Maneja almacenamiento y exportación a archivos.
 
-### 5.1 Capas del sistema
+## 5. Componentes principales
 
-- **Capa de presentación**: Interfaz de consola para interactuar con el sistema.
-- **Capa de negocios**: Lógica de navegación y análisis de enlaces.
-- **Capa de datos**: Manejo de la comunicación con archivos y almacenamiento de datos.
+### 5.1 WebCrawler
 
-### 5.2 Diagrama de componentes y clases
+Clase principal de la capa de negocio. Realiza la navegación recursiva y contiene las operaciones:
+
+- `void crawl(const char* rootUrl, int maxDepth);`
+- `int countLinks() const;`
+- `bool findKeyword(const char* keyword) const;`
+- `void detectBrokenLinks() const;`
+
+### 5.2 WebFetcher
+
+Módulo auxiliar basado en `libcurl` para descargar contenido HTML:
+
+- `char* fetchPage(const char* url);`
+
+El contenido debe ser liberado manualmente con `memFree()`.
+
+### 5.3 Utilidades de memoria y cadenas
+
+- `memAlloc`, `memRealloc`, `memCopy`, `memFree`: reemplazos de `malloc`, `realloc`, `memcpy`, `free`.
+- `stringLength`, `compareString`, `copyString`: utilidades para manejar `char*`.
+
+### 5.4 Estructuras de datos personalizadas
+
+- `LinkedList`: lista enlazada simple para almacenar nodos hijos y URLs visitadas.
+- `Stack`: para posibles futuras implementaciones de recorrido iterativo.
+- `TreeNode` y `NavigationTree`: representan el árbol de navegación.
+
+## 6. Diagrama de clases
 
 ```mermaid
 classDiagram
-    %% Capa de Presentación
     class ConsoleUI {
         +run()
     }
-
-    %% Capa de Negocio
     class WebCrawler {
         -visitedUrls: LinkedList
-        +crawl(const char* url, int depth)
+        +crawl(const char*, int)
         +countLinks()
-        +findKeyword(const char* keyword)
+        +findKeyword(const char*)
         +detectBrokenLinks()
     }
-
+    class WebFetcher {
+        +fetchPage(const char*)
+    }
     class NavigationTree {
         -root: TreeNode*
-        +addNode(const char* url)
-        +exportToFile(const char* filename)
+        +addNode(const char*, TreeNode*)
+        +exportToFile(const char*)
     }
-
-    %% Entidades de Dominio
     class TreeNode {
         -url: char*
         -children: LinkedList
         +addChild(TreeNode*)
     }
-
-    %% Capa de Datos
-    class FileExporter {
-        +exportTree(const NavigationTree&, const char* filename)
-    }
-
-    %% Estructuras de Datos
     class LinkedList {
         +add(void*)
         +remove(void*): bool
         +get(int): void*
         +size(): int
     }
-
     class Stack {
         +push(int)
         +pop(): int
@@ -92,45 +103,41 @@ classDiagram
     }
 ```
 
-## 6. Estructuras de datos y diagrama de clases
-
-- **Árbol de navegación**: Representado por `NavigationTree` y `TreeNode`, utilizando `LinkedList` para gestionar los nodos hijos.
-- **Conjunto de URLs visitadas**: Implementado con `LinkedList` para evitar ciclos.
-- **Pila de exploración**: Implementada con `Stack` para gestionar la exploración de enlaces en profundidad.
-
 ## 7. Plan de pruebas
 
-- Pruebas unitarias para cada clase (`WebCrawler`, `NavigationTree`, `TreeNode`, `LinkedList`, `Stack`).
-- Pruebas de integración para la construcción del árbol y análisis de enlaces.
-- Validación de la exportación del árbol y detección de enlaces rotos.
+- Pruebas unitarias para cada clase y módulo: `WebCrawler`, `WebFetcher`, `TreeNode`, `LinkedList`, `Stack`, `StringUtils`, `MemoryUtils`.
+- Pruebas de integración para navegación, conteo y búsqueda.
 
-## 8. Consideraciones sobre el manejo de memoria
+Ejemplo de prueba:
 
-El sistema utiliza memoria dinámica para manejar URLs de longitud variable. Se han implementado destructores adecuados para liberar memoria y evitar fugas. Sin embargo, no se han realizado pruebas exhaustivas de memoria debido a la naturaleza del proyecto. Se recomienda el uso de herramientas de análisis de memoria para proyectos más críticos.
+```cpp
+void testFetchPage() {
+    char* html = fetchPage("http://example.com");
+    assert(html != nullptr);
+    assert(stringLength(html) > 0);
+    // ... verificar contenido ...
+    memFree(html);
+}
+```
 
-## 9. Plan de implementación en código
+## 8. Consideraciones de memoria
 
-**Nota**: Archivos `.h` en `include/`, archivos `.cpp` en `src/` divididos por dominio (`business/`, `data/`, `ui/`). Se recomienda seguir TDD (pruebas antes de la implementación).
+Todo el manejo de memoria es manual y se usa `new[]`/`delete[]` o funciones de `MemoryUtils`. Se recomienda verificar con herramientas como `valgrind` si se desea asegurar ausencia de fugas.
 
-### Pasos en orden lógico:
+## 9. Estructura del proyecto
 
-1. **Estructuras básicas**
+```
+include/         # Headers compartidos
+src/             # Implementación de negocio, datos y utilidades
+src/business/    # WebCrawler, WebFetcher
+src/utility/     # StringUtils, MemoryUtils
+src/data/        # TreeNode, NavigationTree
+src/ui/          # ConsoleUI
 
-   - `LinkedList`, `Stack`, `TreeNode`, `NavigationTree`.
+bin/             # Ejecutables de prueba
+lib/             # Biblioteca estática
 
-2. **Lógica de negocio**
+CMakeLists.txt   # Configuración de build
+```
 
-   - `WebCrawler` con `crawl()`, `countLinks()`, `findKeyword()`, `detectBrokenLinks()`.
-
-3. **Persistencia**
-
-   - `FileExporter` para exportar el árbol a un archivo.
-
-4. **Interfaz de usuario (UI)**
-
-   - `ConsoleUI` con opciones para construir el árbol, analizar enlaces, buscar palabras clave, detectar enlaces rotos y exportar.
-
-5. **Pruebas**
-
-   - Tests unitarios e integración en la carpeta `tests/`.
-   - Validación de cada funcionalidad del sistema.
+---
