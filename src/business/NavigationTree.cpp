@@ -27,6 +27,44 @@ TreeNode* NavigationTree::findNode(const char* url) const {
     return findNodeRecursive(root, url);
 }
 
+LinkStats NavigationTree::computeStats(const char* domain) const {
+    LinkStats stats = {0, 0, 0, 0};
+    computeStatsRecursive(root, domain, 0, stats);
+    return stats;
+}
+
+void NavigationTree::computeStatsRecursive(TreeNode* node, const char* domain, int depth, LinkStats& stats) {
+    if (!node) return;
+
+    ++stats.total;
+    if (depth > stats.maxDepth) {
+        stats.maxDepth = depth;
+    }
+
+    // Verificar si es interno
+    bool isInternal = true;
+    int domainLen = stringLength(domain);
+    int urlLen = stringLength(node->url);
+
+    if (urlLen < domainLen) {
+        isInternal = false;
+    } else {
+        for (int i = 0; i < domainLen && isInternal; ++i) {
+            if (node->url[i] != domain[i]) {
+                isInternal = false;
+            }
+        }
+    }
+
+    if (isInternal) ++stats.internal;
+    else ++stats.external;
+
+    for (int i = 0; i < node->children->size(); ++i) {
+        TreeNode* child = static_cast<TreeNode*>(node->children->get(i));
+        computeStatsRecursive(child, domain, depth + 1, stats);
+    }
+}
+
 void NavigationTree::addNode(const char* url, TreeNode* parent) {
     TreeNode* newNode = new TreeNode(url);
 
@@ -41,7 +79,6 @@ void NavigationTree::addNode(const char* url, TreeNode* parent) {
     } else {
         parent->addChild(newNode);
     }
-    std::cout << "[DEBUG] addNode called for: " << url << std::endl;
 }
 
 void NavigationTree::exportToFile(const char* filename) const {

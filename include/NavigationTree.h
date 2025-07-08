@@ -3,6 +3,13 @@
 
 #include "TreeNode.h"
 
+struct LinkStats {
+    int total;
+    int internal;
+    int external;
+    int maxDepth;
+};
+
 class NavigationTree {
 public:
     NavigationTree();
@@ -11,6 +18,8 @@ public:
     TreeNode* getRoot() const;
     TreeNode* findNodeRecursive(TreeNode* node, const char* url) const;
     TreeNode* findNode(const char* url) const;
+    LinkStats computeStats(const char* domain) const;
+    static void computeStatsRecursive(TreeNode* node, const char* domain, int depth, LinkStats& stats);
     void addNode(const char* url, TreeNode* parent);
     void exportToFile(const char* filename) const;
     int countNodes() const;

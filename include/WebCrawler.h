@@ -10,8 +10,8 @@ public:
     WebCrawler();
     ~WebCrawler();
 
-/// Explora recursivamente los enlaces desde rootUrl hasta maxDepth
-void crawl(const char* rootUrl, int maxDepth);
+    /// Explora recursivamente los enlaces desde rootUrl hasta maxDepth
+    void crawl(const char* rootUrl, int maxDepth);
     int countLinks() const;
     bool findKeyword(const char* keyword) const;
     void detectBrokenLinks() const;
@@ -19,6 +19,7 @@ void crawl(const char* rootUrl, int maxDepth);
 private:
     NavigationTree* navigationTree;
     LinkedList visitedUrls;
+    char* rootUrl;
 
     bool isVisited(const char* url) const;
     void markVisited(const char* url);

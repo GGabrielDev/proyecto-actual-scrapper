@@ -15,6 +15,11 @@ void WebCrawler::crawl(const char* rootUrl, int maxDepth) {
         return;
     }
 
+    // Guardamos rootUrl para usarlo luego en countLinks
+    int len = stringLength(rootUrl) + 1;
+    this->rootUrl = (char*)memAlloc(len);
+    copyString(this->rootUrl, rootUrl, len);
+
     markVisited(rootUrl);
     navigationTree->addNode(rootUrl, nullptr); // Añadir raíz
 
@@ -59,7 +64,6 @@ void WebCrawler::crawl(const char* rootUrl, int maxDepth) {
         // }
         // navigationTree->addNode(childUrl, parentNode);
         
-        std::cout << "[DEBUG] 3ra Bandera dentro del for, ciclo:" << i << std::endl;
         TreeNode* parentNode = navigationTree->findNode(rootUrl);
         if (!parentNode) {
             std::cout << "[ERROR] findNode falló para: " << rootUrl << std::endl;
@@ -78,7 +82,13 @@ void WebCrawler::crawl(const char* rootUrl, int maxDepth) {
 }
 
 int WebCrawler::countLinks() const {
-    return navigationTree->countNodes();
+    LinkStats stats = navigationTree->computeStats(rootUrl); // ← rootUrl debe ser guardado
+    std::cout << "[INFO] Total: " << stats.total
+              << ", Internos: " << stats.internal
+              << ", Externos: " << stats.external
+              << ", Profundidad: " << stats.maxDepth
+              << std::endl;
+    return stats.total;
 }
 
 bool WebCrawler::findKeyword(const char* keyword) const {
