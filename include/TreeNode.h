@@ -9,13 +9,12 @@ public:
     TreeNode(const char* url);
     ~TreeNode();
 
+    LinkedList* children;
+    char* url;
+
     void addChild(TreeNode* child);
     const char* getUrl() const;
     LinkedList* getChildren() const;
-
-private:
-    char* url;  // Pointer to dynamically allocated memory
-    LinkedList* children;
 };
 
 #endif // TREE_NODE_H

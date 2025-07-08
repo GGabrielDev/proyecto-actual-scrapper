@@ -1,4 +1,7 @@
+#include "LinkExtractor.h"
+#include "MemoryUtils.h"
 #include "WebCrawler.h"
+#include "WebFetcher.h"
 #include <iostream> // Para demostración
 
 WebCrawler::WebCrawler() : navigationTree(new NavigationTree()) {}
@@ -8,22 +11,74 @@ WebCrawler::~WebCrawler() {
 }
 
 void WebCrawler::crawl(const char* rootUrl, int maxDepth) {
-    if (isVisited(rootUrl)) {
+    if (isVisited(rootUrl) || maxDepth < 0) {
         return;
     }
 
     markVisited(rootUrl);
-    navigationTree->addNode(rootUrl, nullptr);
+    navigationTree->addNode(rootUrl, nullptr); // Añadir raíz
 
-    // Simula logica de navegación
-    std::cout << "Crawling: " << rootUrl << " at depth " << maxDepth << std::endl;
+    char* html = fetchPage(rootUrl);
 
-    // Aqui va la logica para halar la pagina y evaluarla, proseguido de recursivamente navegar los links.
+    if (!html) {
+        std::cout << "[WARN] Falló fetch de: " << rootUrl << std::endl;
+        return;
+    }
+
+    LinkedList links;
+    extractLinks(html, &links);
+
+
+    for (int i = 0; i < links.size(); ++i) {
+        char* childUrl = static_cast<char*>(links.get(i));
+
+        // Ignorar enlaces vacíos o anclas
+        if (stringLength(childUrl) == 0 || childUrl[0] == '#') {
+            memFree(childUrl);
+            continue;
+        }
+
+        // Verificar si es del mismo dominio (simulado por prefijo simple)
+        bool isInternal = false;
+        int rootLen = stringLength(rootUrl);
+        int childLen = stringLength(childUrl);
+
+        if (childLen >= rootLen) {
+            bool matches = true;
+            for (int j = 0; j < rootLen && matches; ++j) {
+                if (rootUrl[j] != childUrl[j]) matches = false;
+            }
+            isInternal = matches;
+        }
+
+        // TreeNode* parentNode = navigationTree->findNode(rootUrl);
+        // if (!parentNode) {
+        //     std::cout << "[ERROR] Nodo raíz no encontrado para: " << rootUrl << std::endl;
+        //     memFree(html);
+        //     return;
+        // }
+        // navigationTree->addNode(childUrl, parentNode);
+        
+        std::cout << "[DEBUG] 3ra Bandera dentro del for, ciclo:" << i << std::endl;
+        TreeNode* parentNode = navigationTree->findNode(rootUrl);
+        if (!parentNode) {
+            std::cout << "[ERROR] findNode falló para: " << rootUrl << std::endl;
+            continue; // Evita crash
+        }
+        navigationTree->addNode(childUrl, parentNode);
+
+        if (isInternal && !isVisited(childUrl)) {
+            crawl(childUrl, maxDepth - 1);
+        }
+
+        memFree(childUrl);
+    }
+
+    memFree(html);
 }
 
 int WebCrawler::countLinks() const {
-    // Placeholder para la logica de conteo
-    return 0;
+    return navigationTree->countNodes();
 }
 
 bool WebCrawler::findKeyword(const char* keyword) const {

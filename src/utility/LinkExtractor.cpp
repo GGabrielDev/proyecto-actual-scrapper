@@ -1,8 +1,9 @@
 #include "LinkExtractor.h"
 #include "StringUtils.h"
 #include "MemoryUtils.h"
+#include <iostream>
 
-void extractLinks(const char* html, LinkedList* outLinks) {
+void extractLinks(const char* html, LinkedList* outLinks) { 
     const char* pattern = "href=\"";
     int patternLen = 6;
 

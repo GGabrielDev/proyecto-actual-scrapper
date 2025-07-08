@@ -9,8 +9,12 @@ public:
     ~NavigationTree();
 
     TreeNode* getRoot() const;
+    TreeNode* findNodeRecursive(TreeNode* node, const char* url) const;
+    TreeNode* findNode(const char* url) const;
     void addNode(const char* url, TreeNode* parent);
     void exportToFile(const char* filename) const;
+    int countNodes() const;
+    int countRecursive(TreeNode* node) const;
 
 private:
     TreeNode* root;

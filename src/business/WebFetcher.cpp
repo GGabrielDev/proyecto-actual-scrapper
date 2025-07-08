@@ -1,6 +1,10 @@
-#include "MemoryUtils.h"
-#include "WebFetcher.h"
+// En este codigo se usa las librerias estandar de manejo de memoria y de
+// strings por la necesidad de robustez necesaria para manejar rangos
+// arbitrarios de memoria (ya que las paginas tienen distintos tamaños)
+
 #include <curl/curl.h>
+#include <cstdlib>  // ✅ usar malloc, realloc, free
+#include <cstring>  // ✅ usar memcpy
 
 struct MemoryBuffer {
     char* data;
@@ -11,13 +15,13 @@ static size_t writeCallback(void* contents, size_t size, size_t nmemb, void* use
     size_t totalSize = size * nmemb;
     MemoryBuffer* mem = (MemoryBuffer*)userp;
 
-    char* ptr = (char*)memRealloc(mem->data, mem->size + totalSize + 1);
+    char* ptr = (char*)realloc(mem->data, mem->size + totalSize + 1);
     if (ptr == nullptr) {
         return 0; // out of memory
     }
 
     mem->data = ptr;
-    memCopy(&(mem->data[mem->size]), contents, totalSize);
+    memcpy(&(mem->data[mem->size]), contents, totalSize);
     mem->size += totalSize;
     mem->data[mem->size] = '\0';
 
@@ -29,7 +33,7 @@ char* fetchPage(const char* url) {
     CURLcode res;
 
     MemoryBuffer buffer;
-    buffer.data = (char*)memAlloc(1);
+    buffer.data = (char*)malloc(1);
     buffer.size = 0;
 
     curl = curl_easy_init();
@@ -43,7 +47,7 @@ char* fetchPage(const char* url) {
 
     res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
-        memFree(buffer.data);
+        free(buffer.data);
         buffer.data = nullptr;
     }
 
