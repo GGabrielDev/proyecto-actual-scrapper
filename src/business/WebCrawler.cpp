@@ -2,79 +2,84 @@
 #include "MemoryUtils.h"
 #include "WebCrawler.h"
 #include "WebFetcher.h"
-#include <iostream> // Para demostración
+#include "StringUtils.h"
+#include <iostream>
 
-WebCrawler::WebCrawler() : navigationTree(new NavigationTree()) {}
+WebCrawler::WebCrawler()
+    : navigationTree(new NavigationTree()), rootUrl(nullptr), rootDomain(nullptr) {}
 
 WebCrawler::~WebCrawler() {
     delete navigationTree;
+    if (rootUrl) memFree(rootUrl);
+    if (rootDomain) memFree(rootDomain);
 }
 
 void WebCrawler::crawl(const char* rootUrl, int maxDepth) {
-    if (isVisited(rootUrl) || maxDepth < 0) {
-        return;
-    }
+    std::cout << "[DEBUG] Iniciando crawl raíz: " << rootUrl << " hasta profundidad: " << maxDepth << std::endl;
 
-    // Guardamos rootUrl para usarlo luego en countLinks
+    if (rootUrl == nullptr || maxDepth < 0) return;
+
     int len = stringLength(rootUrl) + 1;
     this->rootUrl = (char*)memAlloc(len);
     copyString(this->rootUrl, rootUrl, len);
 
-    markVisited(rootUrl);
-    navigationTree->addNode(rootUrl, nullptr); // Añadir raíz
+    this->rootDomain = extractDomain(rootUrl);
 
-    char* html = fetchPage(rootUrl);
+    crawlRecursive(rootUrl, nullptr, 0, maxDepth);
+}
 
-    if (!html) {
-        std::cout << "[WARN] Falló fetch de: " << rootUrl << std::endl;
-        return;
-    }
+void WebCrawler::crawlRecursive(const char* url, TreeNode* parent, int depth, int maxDepth) {
+    std::cout << "[DEBUG] Entrando a: " << url << " con profundidad: " << depth << std::endl;
+
+    if (depth > maxDepth) return;
+
+    if (isVisited(url)) return;
+    markVisited(url);
+
+    navigationTree->addNode(url, parent);
+
+    char* html = fetchPage(url);
+    if (!html) return;
 
     LinkedList links;
     extractLinks(html, &links);
 
+    TreeNode* current = navigationTree->findNode(url);
+    if (!current) {
+        std::cout << "[ERROR] No se encontró nodo para: " << url << std::endl;
+        memFree(html);
+        return;
+    }
 
     for (int i = 0; i < links.size(); ++i) {
         char* childUrl = static_cast<char*>(links.get(i));
 
-        // Ignorar enlaces vacíos o anclas
         if (stringLength(childUrl) == 0 || childUrl[0] == '#') {
             memFree(childUrl);
             continue;
         }
 
-        // Verificar si es del mismo dominio (simulado por prefijo simple)
+        std::cout << "[DEBUG] URL original: " << childUrl << std::endl;
+        char* norm = normalizeUrl(this->rootUrl, childUrl);
+        std::cout << "[DEBUG] URL normalizada: " << norm << std::endl;
+
         bool isInternal = false;
-        int rootLen = stringLength(rootUrl);
-        int childLen = stringLength(childUrl);
+        int domainLen = stringLength(rootDomain);
+        int normLen = stringLength(norm);
 
-        if (childLen >= rootLen) {
-            bool matches = true;
-            for (int j = 0; j < rootLen && matches; ++j) {
-                if (rootUrl[j] != childUrl[j]) matches = false;
-            }
-            isInternal = matches;
+        isInternal = startsWith(norm, rootDomain);
+
+        // std::cout << "[DEBUG] Agregando nodo: " << norm
+        //           << " hijo de: " << (current ? current->url : "ROOT")
+        //           << " a profundidad: " << (depth + 1)
+        //           << std::endl;
+        navigationTree->addNode(norm, current);  // Importante: usar URL normalizada
+
+        if (isInternal) {
+            crawlRecursive(norm, current, depth + 1, maxDepth);
         }
 
-        // TreeNode* parentNode = navigationTree->findNode(rootUrl);
-        // if (!parentNode) {
-        //     std::cout << "[ERROR] Nodo raíz no encontrado para: " << rootUrl << std::endl;
-        //     memFree(html);
-        //     return;
-        // }
-        // navigationTree->addNode(childUrl, parentNode);
-        
-        TreeNode* parentNode = navigationTree->findNode(rootUrl);
-        if (!parentNode) {
-            std::cout << "[ERROR] findNode falló para: " << rootUrl << std::endl;
-            continue; // Evita crash
-        }
-        navigationTree->addNode(childUrl, parentNode);
-
-        if (isInternal && !isVisited(childUrl)) {
-            crawl(childUrl, maxDepth - 1);
-        }
-
+        memFree(norm);
         memFree(childUrl);
     }
 
@@ -82,7 +87,7 @@ void WebCrawler::crawl(const char* rootUrl, int maxDepth) {
 }
 
 int WebCrawler::countLinks() const {
-    LinkStats stats = navigationTree->computeStats(rootUrl); // ← rootUrl debe ser guardado
+    LinkStats stats = navigationTree->computeStats(rootDomain);  // Cambiado a rootDomain
     std::cout << "[INFO] Total: " << stats.total
               << ", Internos: " << stats.internal
               << ", Externos: " << stats.external
@@ -92,26 +97,24 @@ int WebCrawler::countLinks() const {
 }
 
 bool WebCrawler::findKeyword(const char* keyword) const {
-    // Placeholder para la logica de busqueda
     return false;
 }
 
 void WebCrawler::detectBrokenLinks() const {
-    // Placeholder para la logica de enlaces rotos
+    // Placeholder
 }
 
-bool WebCrawler::isVisited(const char* url) const {
-    for (int i = 0; i < visitedUrls.size(); ++i) {
-        if (compareString(static_cast<const char*>(visitedUrls.get(i)), url) == 0) {
-            return true;
-        }
-    }
-    return false;
+bool WebCrawler::isVisited(const char* url) {
+    char* norm = normalizeUrl(this->rootUrl, url);
+    bool found = visitedUrls.contains(norm, comparePtrsAsStrings);
+    if (found)
+        std::cout << "[DEBUG] Ya visitada: " << norm << std::endl;
+    memFree(norm);
+    return found;
 }
 
 void WebCrawler::markVisited(const char* url) {
-    int length = stringLength(url) + 1;
-    char* urlCopy = new char[length];
-    copyString(urlCopy, url, length);
-    visitedUrls.add(static_cast<void*>(urlCopy));
+    char* norm = normalizeUrl(this->rootUrl, url);
+    std::cout << "[DEBUG] Marcando como visitada: " << norm << std::endl;
+    visitedUrls.add(norm);
 }

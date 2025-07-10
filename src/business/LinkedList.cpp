@@ -61,3 +61,14 @@ void* LinkedList::get(int index) const {
 int LinkedList::size() const {
     return length;
 }
+
+bool LinkedList::contains(void* value, bool (*equals)(void*, void*)) const {
+    Node* current = head;
+    while (current != nullptr) {
+        if (equals(value, current->data)) {
+            return true;
+        }
+        current = current->next;
+    }
+    return false;
+}

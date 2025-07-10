@@ -11,6 +11,7 @@ public:
     bool remove(void* value);
     void* get(int index) const;
     int size() const;
+    bool contains(void* value, bool (*equals)(void*, void*)) const;
 
 private:
     struct Node {

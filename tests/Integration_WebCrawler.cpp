@@ -3,21 +3,28 @@
 #include <iostream>
 #include <cassert>
 
-void testCrawlWikipedia() {
-    const char* startUrl = "https://en.wikipedia.org/wiki/Web_crawler";
+void testCrawlWikipediaDepthComparison() {
+    const char* startUrl = "https://docs.redhat.com/en";
 
-    WebCrawler crawler;
-    crawler.crawl(startUrl, 1); // Profundidad 1
+    WebCrawler crawler1;
+    crawler1.crawl(startUrl, 1);
+    int count1 = crawler1.countLinks();
 
-    int count = crawler.countLinks();
-    std::cout << "[INFO] Total links found: " << count << std::endl;
+    WebCrawler crawler2;
+    crawler2.crawl(startUrl, 2);
+    int count2 = crawler2.countLinks();
 
-    assert(count > 0); // Esperamos al menos algunos enlaces
+    std::cout << "[DEBUG] count1 = " << count1 << ", count2 = " << count2 << std::endl;
 
-    std::cout << "[PASSED] testCrawlWikipedia\n";
+    // No garantizamos que count2 > count1 si los enlaces se repiten o son equivalentes.
+    // Verificamos que no sea menor, y que ambos tengan al menos algo.
+    assert(count1 > 0);
+    assert(count2 >= count1);
+
+    std::cout << "[PASSED] testCrawlWikipediaDepthComparison\n";
 }
 
 int main() {
-    testCrawlWikipedia();
+    testCrawlWikipediaDepthComparison();
     return 0;
 }
